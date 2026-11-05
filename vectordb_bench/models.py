@@ -207,6 +207,7 @@ class CaseConfigParamType(Enum):
     hnsw_m = "hnsw_m"
     algorithm = "algorithm"
     rabitq_bits = "rabitq_bits"
+    turbovec_bits = "turbovec_bits"
     quantize_rescore_amp = "quantize_rescore_amp"
     nova_adaptive_gamma = "nova_adaptive_gamma"
     max_scan_points = "max_scan_points"

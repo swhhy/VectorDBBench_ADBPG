@@ -1,0 +1,43 @@
+adbpgnova:
+  # Performance reference:
+  # https://help.aliyun.com/zh/analyticdb/analyticdb-for-postgresql/user-guide/nova-vector-index-performance-white-paper
+  db_label: cohere1m-novamt
+  task_label: cohere1m-top10-r095
+
+  case_type: Performance768D1M
+  k: 10
+  drop_old: true
+  load: true
+  search_serial: true
+  search_concurrent: true
+  num_concurrency: "1,32,48,64,128"
+  concurrency_duration: 100
+
+  host: <adbpg-host>
+  port: 5432
+  db_name: postgres
+  user_name: <adbpg-user>
+  # Set the password with POSTGRES_PASSWORD.
+
+  # Applied through native CREATE INDEX ... USING ann ... INCLUDE (id).
+  build_parameters:
+    reloption:
+      algorithm: novamt
+      hnsw_m: 48
+      hnsw_ef_construction: 600
+      turbovec_bits: 4
+      auto_reduction: on
+    guc:
+      fastann.build_parallel_processes: 32
+
+  # Search selects a saved target; TopK follows k.
+  search_parameters:
+    reloption:
+      nova_autotune_recall: 0.95
+    guc: {}
+
+  # AutoTune runs only in optimize(), after loading and index creation.
+  autotune_parameters:
+    n_samples: 1000
+    n_trials: 200
+    n_threads: 8

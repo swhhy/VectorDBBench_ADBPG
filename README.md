@@ -727,43 +727,28 @@ To list the options for Lindorm, execute `vectordbbench lindormhnsw --help`, The
   --reorder-factor INTEGER        reorder factor
 ```
 
-### Run ADBPG (Aliyun AnalyticDB for PostgreSQL) from command line
+### Run ADBPG (Aliyun AnalyticDB for PostgreSQL)
 
-ADBPG Nova uses the fastann/Nova vector index engine with `USING ann` syntax.
-
-**Example: Run novamr index benchmark (BioASQ 1M, 1024-dim)**
-
-```shell
-vectordbbench adbpgnova --case-type Performance1024D1M --k 10 \
---host <adbpg_host> --port 5432 --db-name postgres \
---user-name <username> --password <password> \
---algorithm novamr --hnsw-m 48 --ef-construction 600 \
---ef-search 130 --max-scan-points 5000 --quantize-rescore-amp 2.0
-```
-
-**Example: Run from config file**
+ADBPG uses native SQL for loading, index creation and search. Optional AutoTune runs in
+`optimize()` after loading and waits for the server to persist its results.
 
 ```shell
-vectordbbench adbpgnova --config-file adbpg_bioasq1m_novamr.yml
+vectordbbench adbpgnova --case-type Performance768D1M --k 10 \
+  --host <host> --port 5432 --db-name <database> --user-name <user> --password '<password>' \
+  --build-parameters '{"reloption":{"algorithm":"novamt","turbovec_bits":4,"hnsw_m":48,"hnsw_ef_construction":600,"auto_reduction":true}}' \
+  --autotune-parameters '{"nova_autotune_topk":[10,100],"nova_autotune_recall":[0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99],"n_samples":1000,"n_trials":500,"n_threads":8}' \
+  --search-parameters '{"reloption":{"nova_autotune_recall":0.99}}'
 ```
 
-To list the options for ADBPG, execute `vectordbbench adbpgnova --help`. The following are some ADBPG-specific command-line options.
+- `build_parameters` and `search_parameters` accept `reloption` and `guc` mappings (JSON/YAML).
+- The default index is `novamt` with TurboVec 4-bit quantization.
+- Search TopK comes from `--k`; `nova_autotune_recall` selects the saved target Recall. Search does not retune.
+- To reuse the grid for Top100, run the same command with `--k 100 --skip-load --skip-drop-old`.
+- Omit `--autotune-parameters` for manual parameters or search-only reuse. `{}` tunes the current K
+  with defaults `n_samples=1000`, `n_trials=200`, `n_threads=8`.
+- Use `--master-only` for a master-local test. The client enables reader gang retention automatically.
 
-```text
-  --user-name TEXT                Db username  [required]
-  --password TEXT                 Postgres database password  [$POSTGRES_PASSWORD]
-  --host TEXT                     Db host  [required]
-  --port INTEGER                  Postgres database port  [default: 5432]
-  --db-name TEXT                  Db name  [required]
-  --algorithm TEXT                algorithm  [default: novamr]
-  --hnsw-m INTEGER                hnsw_m  [default: 16]
-  --ef-construction INTEGER       ef_construction  [default: 200]
-  --ef-search INTEGER             ef_search  [default: 100]
-  --max-scan-points INTEGER       max scan points  [default: 2000]
-  --quantize-rescore-amp FLOAT    fastann.quantize_rescore_amp  [default: 1.0]
-  --nova-adaptive-gamma FLOAT     fastann.nova_adaptive_gamma  [default: 0.0]
-  --auto-reduction/--no-auto-reduction  Index WITH auto_reduction=on  [default: False]
-```
+YAML example: `vectordbbench adbpgnova --config-file vectordb_bench/config-files/adbpg_cohere1m_novamt.yml`.
 
 ### Run PolarDB from command line
 

@@ -230,6 +230,8 @@ class CaseRunner(BaseModel):
             extra_db_kwargs["fts_filter_enabled"] = self.ca.filters.type != FilterOp.NonFilter
         if self.config.db is DB.AWSOpenSearch:
             extra_db_kwargs["insert_batch_size"] = self.config.insert_batch_size
+        if self.config.db is DB.Adbpg:
+            extra_db_kwargs["autotune_topk"] = self.config.case_config.k
         collection_properties = self._collection_properties(log_selection=True)
         if collection_properties:
             extra_db_kwargs["collection_properties"] = collection_properties

@@ -3527,7 +3527,7 @@ CaseConfigParamInput_Algorithm_Adbpg = CaseConfigInput(
     inputHelp="Select Nova algorithm variant",
     inputType=InputType.Option,
     inputConfig={
-        "options": ["novamr", "novad"],
+        "options": ["novamt", "novamr", "novad"],
     },
 )
 
@@ -3562,6 +3562,15 @@ CaseConfigParamInput_RabitqBits_Adbpg = CaseConfigInput(
         "value": 7,
     },
     inputHelp="RaBitQ quantization bits",
+    isDisplayed=lambda config: config.get(CaseConfigParamType.algorithm, "novamt") != "novamt",
+)
+
+CaseConfigParamInput_TurbovecBits_Adbpg = CaseConfigInput(
+    label=CaseConfigParamType.turbovec_bits,
+    inputType=InputType.Number,
+    inputConfig={"min": 4, "max": 4, "value": 4},
+    inputHelp="TurboVec quantization bits",
+    isDisplayed=lambda config: config.get(CaseConfigParamType.algorithm, "novamt") == "novamt",
 )
 
 CaseConfigParamInput_AutoReduction_Adbpg = CaseConfigInput(
@@ -3621,6 +3630,7 @@ AdbpgLoadConfig = [
     CaseConfigParamInput_Algorithm_Adbpg,
     CaseConfigParamInput_HnswM_Adbpg,
     CaseConfigParamInput_EFConstruction_Adbpg,
+    CaseConfigParamInput_TurbovecBits_Adbpg,
     CaseConfigParamInput_RabitqBits_Adbpg,
     CaseConfigParamInput_AutoReduction_Adbpg,
 ]
@@ -3629,6 +3639,7 @@ AdbpgPerformanceConfig = [
     CaseConfigParamInput_Algorithm_Adbpg,
     CaseConfigParamInput_HnswM_Adbpg,
     CaseConfigParamInput_EFConstruction_Adbpg,
+    CaseConfigParamInput_TurbovecBits_Adbpg,
     CaseConfigParamInput_RabitqBits_Adbpg,
     CaseConfigParamInput_AutoReduction_Adbpg,
     CaseConfigParamInput_EFSearch_Adbpg,
